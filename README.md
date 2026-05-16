@@ -1,4 +1,4 @@
-# 🎓 AI Course Tutor
+# 🎓 Education & EdTech - Generative AI Tutor & Adaptive Learning Platform 
 
 > An AI-powered personalized tutoring system that answers student questions **strictly from uploaded course material**, preventing hallucinations.
 
