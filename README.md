@@ -12,7 +12,6 @@ Built with FastAPI + ChromaDB + Local Embeddings + Gemini Flash 3.
 - **No Hallucinations**: Answers only from your syllabus
 - **Fast Ingestion**: Parse PDFs -> Chunks -> Vector DB in seconds
 - **Edge Case Safe**: Handles scanned, corrupted, password-protected PDFs
-- **Local Embeddings**: Uses `all-MiniLM-L6-v2` — no API cost
 - **Swagger UI**: Fully documented API at `/docs`
 - **Persistent Storage**: Knowledge survives restarts
 - **Tested**: 10+ edge cases covered in test suite
