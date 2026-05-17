@@ -1,11 +1,11 @@
-# 🎓 AI Course Tutor — Project Architecture Overview
+#  Education & EdTech - Generative AI Tutor & Adaptive Learning Platform
 
 > **Vision:** Simulate a 1-on-1 tutoring experience where the AI
 > knows ONLY what is in the course material — nothing more, nothing less.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [Vision & Problem Statement](#vision)
 2. [High-Level Architecture](#architecture)
@@ -20,7 +20,7 @@
 
 ---
 
-## 🎯 Vision & Problem Statement
+## Vision & Problem Statement
 
 ### The Problem
 ```
@@ -61,7 +61,7 @@ students are struggling with
 
 ---
 
-## 🏗️ High-Level Architecture
+## High-Level Architecture
 
 ```
 +─────────────────────────────────────────────────────────+
@@ -101,7 +101,7 @@ students are struggling with
 
 ---
 
-## 🔒 Anti-Hallucination Design
+## Anti-Hallucination Design
 
 The system uses strict RAG (Retrieval-Augmented Generation):
 
@@ -148,7 +148,7 @@ RULES:
 
 ---
 
-## ⚙️ Component Breakdown
+## Component Breakdown
 
 ### 1. PDF Parser — backend/ingestion/pdf_parser.py
 ```
@@ -452,7 +452,7 @@ FEATURES:
 
 ---
 
-## 📊 Data Flow Diagrams
+## Data Flow Diagrams
 
 ### Ingestion Flow
 ```
@@ -567,7 +567,7 @@ Return full ChatResponse with:
 
 ---
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 ### Test Coverage
 ```
@@ -659,7 +659,7 @@ API Edge Cases:
 
 ---
 
-## 🗺️ Roadmap Status
+## Roadmap Status
 
 ```
 +─────────────────────────────────────────────────────────+
@@ -693,7 +693,7 @@ Roadmap:
 
 ---
 
-## 👥 Team Onboarding
+## Team Onboarding
 
 ### Prerequisites
 ```
@@ -756,7 +756,7 @@ New response schema?     → backend/models/schemas.py
 
 ---
 
-## 🔧 Tech Stack Summary
+## Tech Stack Summary
 
 | Component | Technology | Version | Purpose |
 |-----------|------------|---------|---------|
