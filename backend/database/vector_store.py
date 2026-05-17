@@ -32,7 +32,7 @@ class VectorStore:
                 try:
                     # Peek to check the embedding dimension
                     peek_res = self.collection.peek(limit=1)
-                    if peek_res and peek_res.get("embeddings") and len(peek_res["embeddings"]) > 0:
+                    if peek_res is not None and "embeddings" in peek_res and peek_res["embeddings"] is not None and len(peek_res["embeddings"]) > 0:
                         existing_dim = len(peek_res["embeddings"][0])
                         if existing_dim != settings.EMBEDDING_DIMENSION:
                             logger.warning(
