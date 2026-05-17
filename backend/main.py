@@ -74,15 +74,15 @@ async def startup_event():
     print("+" + "="*38 + "+")
     count = vector_store.get_count()
     sources = vector_store.list_sources()
-    print(f"📚 Knowledge base: {count} chunks ready")
-    print(f"📄 Sources: {len(sources)} documents loaded")
+    print(f"Knowledge base: {count} chunks ready")
+    print(f"Sources: {len(sources)} documents loaded")
     
     if sources:
-        print(f"📄 Documents loaded: {len(sources)}")
+        print(f"Documents loaded: {len(sources)}")
         for source in sources:
-            print(f"   • {source}")
+            print(f"   * {source}")
     else:
-        print("📄 No documents loaded yet")
+        print("No documents loaded yet")
         print("   Upload a PDF via POST /upload to get started")
 
 # --- System Endpoint ---
