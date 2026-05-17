@@ -71,3 +71,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and workflow.
 MIT
 
 Made with ❤️ for students who deserve better tutors.
+
+## QA Testing Log (Mid-Month Review)
+* [span_0](start_span)Successfully verified the RAG Ingestion Pipeline using standard course syllabus PDFs[span_0](end_span).
+* [span_1](start_span)[span_2](start_span)Validated zero-hallucination guardrails via the FastAPI Swagger UI chat endpoint[span_1](end_span)[span_2](end_span).
+* [span_3](start_span)Confirmed context-relevant source citation delivery alongside model responses[span_3](end_span).
