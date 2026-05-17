@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import time
 import shutil
 import re
@@ -12,10 +12,13 @@ from datetime import datetime
 from backend.config import settings
 from backend.models.schemas import (
     HealthResponse, UploadResponse, StatsResponse, 
-    InspectResponse, ResetResponse, ErrorResponse, ChunkInfo
+    InspectResponse, ResetResponse, ErrorResponse, ChunkInfo,
+    ChatRequest, ChatResponse, HistoryResponse, AllSessionsResponse, 
+    ClearHistoryResponse, HistoryMessage, ContextChunk, FaithfulnessCheck, TimingInfo
 )
 from backend.ingestion.pipeline import IngestionPipeline
 from backend.database.vector_store import VectorStore
+from backend.chat.rag_chain import RAGChain
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -25,12 +28,14 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description=settings.APP_DESCRIPTION + """
 ## AI-Powered RAG Tutor System
-Upload course materials and get instant AI-powered answers.
+Upload course materials and chat with them.
+The entire system is 100% powered by the Google Gemini API.
 """,
     openapi_tags=[
-        {"name": "System", "description": "Health checks"},
-        {"name": "Ingestion", "description": "Process materials"},
-        {"name": "Knowledge Base", "description": "Manage stored knowledge"}
+        {"name": "System", "description": "Health and system status check"},
+        {"name": "Ingestion", "description": "Upload and parse new course syllabi"},
+        {"name": "Knowledge Base", "description": "Browse or reset vector database collections"},
+        {"name": "RAG Chat", "description": "Chat with uploaded course material strictly backed by context"}
     ]
 )
 
@@ -52,20 +57,24 @@ async def global_exception_handler(request: Request, exc: Exception):
         content=ErrorResponse(message="An unexpected error occurred", detail=str(exc)).model_dump()
     )
 
+# --- Services Initialization ---
 pipeline = IngestionPipeline()
 vector_store = VectorStore()
+rag_chain = RAGChain()
 
 @app.on_event("startup")
 async def startup_event():
     print("+" + "="*38 + "+")
     print("|     AI Course Tutor API v1.0         |")
     print("+" + "="*38 + "+")
-    print("|  LLM: Gemini Flash 3                 |")
-    print("|  Embeddings: all-MiniLM-L6-v2        |")
-    print("|  Vector DB: ChromaDB                 |")
+    print(f"|  LLM: Gemini Flash 3 ({settings.LLM_MODEL})   |")
+    print(f"|  Embeddings: Gemini ({settings.EMBEDDING_MODEL})   |")
+    print("|  Vector DB: ChromaDB (768 dims)      |")
     print("+" + "="*38 + "+")
     count = vector_store.get_count()
     print(f"Knowledge base: {count} chunks ready")
+
+# --- System Endpoint ---
 
 @app.get("/health", tags=["System"], response_model=HealthResponse)
 async def health():
@@ -73,14 +82,16 @@ async def health():
         status="healthy",
         app_title=settings.APP_TITLE,
         app_version=settings.APP_VERSION,
-        llm_model="Gemini Flash 3",
+        llm_model=settings.LLM_MODEL,
         llm_provider="Google",
-        embedding_model="all-MiniLM-L6-v2",
-        embedding_type="Local",
-        vector_db="ChromaDB",
+        embedding_model=settings.EMBEDDING_MODEL,
+        embedding_type="Cloud (Gemini API)",
+        vector_db="ChromaDB (768 dimensions)",
         total_chunks=vector_store.get_count(),
         timestamp=datetime.now().isoformat()
     )
+
+# --- Ingestion Endpoint ---
 
 @app.post("/upload", tags=["Ingestion"], response_model=UploadResponse)
 async def upload_pdf(file: UploadFile = File(...)):
@@ -113,6 +124,8 @@ async def upload_pdf(file: UploadFile = File(...)):
         )
     finally:
         if temp_path.exists(): os.remove(temp_path)
+
+# --- Knowledge Base Endpoints ---
 
 @app.get("/stats", tags=["Knowledge Base"], response_model=StatsResponse)
 async def stats():
@@ -150,3 +163,81 @@ async def reset():
     prev_count = vector_store.get_count()
     vector_store.reset_collection()
     return ResetResponse(status="success", message="Cleared", previous_chunk_count=prev_count)
+
+# --- Week 2 RAG Chat Endpoints ---
+
+@app.post("/chat", tags=["RAG Chat"], response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    """
+    Chat endpoint for retrieving syllabus material and generating accurate responses.
+    """
+    try:
+        result = rag_chain.chat(question=request.question, session_id=request.session_id)
+        
+        # Convert internal dict structure into ChatResponse Pydantic model
+        return ChatResponse(
+            answer=result["answer"],
+            question=result["question"],
+            session_id=result["session_id"],
+            sources=result["sources"],
+            chunks_used=result["chunks_used"],
+            context_relevance=[ContextChunk(**cr) for cr in result["context_relevance"]],
+            faithfulness_check=FaithfulnessCheck(**result["faithfulness_check"]),
+            model_used=result["model_used"],
+            generation_success=result["generation_success"],
+            timing=TimingInfo(**result["timing"]),
+            timestamp=result["timestamp"],
+            turn_number=result["turn_number"]
+        )
+    except ValueError as val_err:
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as err:
+        logger.error(f"Chat execution failed: {err}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Internal RAG Chat pipeline execution failed.")
+
+@app.get("/chat/history/{session_id}", tags=["RAG Chat"], response_model=HistoryResponse)
+async def get_history(session_id: str):
+    """
+    Retrieves all turn history and citations for a specific student's conversation session.
+    """
+    history = rag_chain.memory.get_history(session_id)
+    messages = []
+    for turn in history:
+        messages.append(HistoryMessage(
+            turn_number=turn["turn_number"],
+            timestamp=turn["timestamp"],
+            question=turn["question"],
+            answer=turn["answer"],
+            sources=turn["sources"],
+            chunks_used=turn["chunks_used"]
+        ))
+    return HistoryResponse(
+        session_id=session_id,
+        total_turns=len(messages),
+        messages=messages
+    )
+
+@app.delete("/chat/history/{session_id}", tags=["RAG Chat"], response_model=ClearHistoryResponse)
+async def clear_history(session_id: str):
+    """
+    Wipes the conversation history for a specific student's conversation session.
+    """
+    success = rag_chain.memory.clear_session(session_id)
+    if success:
+        return ClearHistoryResponse(
+            status="success",
+            session_id=session_id,
+            message="Conversation memory cleared successfully."
+        )
+    raise HTTPException(status_code=404, detail=f"Session ID '{session_id}' not found in active memory.")
+
+@app.get("/chat/sessions", tags=["RAG Chat"], response_model=AllSessionsResponse)
+async def get_sessions():
+    """
+    Browse a list of all active conversational sessions held in memory.
+    """
+    sessions = rag_chain.memory.get_all_sessions()
+    return AllSessionsResponse(
+        total_sessions=len(sessions),
+        sessions=sessions
+    )

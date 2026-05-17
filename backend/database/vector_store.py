@@ -9,6 +9,11 @@ from backend.config import settings
 logger = logging.getLogger(__name__)
 
 class VectorStore:
+    """
+    Hardened wrapper for ChromaDB with robust error handling and management methods.
+    Includes automated collection verification and dimension checks.
+    """
+    
     def __init__(self):
         self.db_path = str(settings.CHROMA_PERSIST_DIR)
         self.collection_name = settings.COLLECTION_NAME
@@ -20,7 +25,27 @@ class VectorStore:
                 name=self.collection_name,
                 metadata={"hnsw:space": "cosine"}
             )
+            
+            # AUTOMATED DIMENSION CHECK & SELF-HEALING
             count = self.collection.count()
+            if count > 0:
+                try:
+                    # Peek to check the embedding dimension
+                    peek_res = self.collection.peek(limit=1)
+                    if peek_res and peek_res.get("embeddings") and len(peek_res["embeddings"]) > 0:
+                        existing_dim = len(peek_res["embeddings"][0])
+                        if existing_dim != settings.EMBEDDING_DIMENSION:
+                            logger.warning(
+                                f"Dimension mismatch detected in collection '{self.collection_name}'. "
+                                f"Existing: {existing_dim}, Expected: {settings.EMBEDDING_DIMENSION}. Recreating collection..."
+                            )
+                            self.reset_collection()
+                            count = 0
+                except Exception as peek_err:
+                    logger.error(f"Failed to verify dimension: {peek_err}. Resetting collection as precaution.")
+                    self.reset_collection()
+                    count = 0
+
             print(f"Connected to collection: {self.collection_name} ({count} chunks)")
         except Exception as e:
             logger.error(f"ChromaDB connection failed at {self.db_path}: {str(e)}")
@@ -40,6 +65,12 @@ class VectorStore:
             if "embedding" not in chunk or chunk["embedding"] is None:
                 print(f"Skipped chunk missing embedding: {chunk.get('chunk_id')}")
                 continue
+            
+            # Double-check dimension before storing
+            if len(chunk["embedding"]) != settings.EMBEDDING_DIMENSION:
+                print(f"Skipped chunk due to dimension mismatch: {chunk.get('chunk_id')}")
+                continue
+                
             ids.append(chunk["chunk_id"])
             embeddings.append(chunk["embedding"])
             documents.append(chunk["text"])
@@ -89,6 +120,8 @@ class VectorStore:
                     "rank": i + 1,
                     "chunk_id": results["ids"][0][i]
                 })
+            # Ensure return sorted by relevance descending
+            formatted_results.sort(key=lambda x: x["relevance_score"], reverse=True)
             return formatted_results
         except Exception as e:
             logger.error(f"Query failed: {str(e)}")
@@ -120,6 +153,12 @@ class VectorStore:
         return self.collection.count()
 
     def reset_collection(self):
-        self.client.delete_collection(self.collection_name)
-        self.collection = self.client.get_or_create_collection(name=self.collection_name)
+        try:
+            self.client.delete_collection(self.collection_name)
+        except Exception:
+            pass
+        self.collection = self.client.get_or_create_collection(
+            name=self.collection_name,
+            metadata={"hnsw:space": "cosine"}
+        )
         logger.warning(f"Collection '{self.collection_name}' has been reset.")
