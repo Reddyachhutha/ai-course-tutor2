@@ -645,7 +645,7 @@ API Edge Cases:
 
 ---
 
-## 📈 Success Metrics
+## Success Metrics
 
 | KPI | Target | Status |
 |-----|--------|--------|
