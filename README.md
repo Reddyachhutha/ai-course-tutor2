@@ -1,4 +1,4 @@
-# 🎓 Education & EdTech - Generative AI Tutor & Adaptive Learning Platform 
+# Education & EdTech - Generative AI Tutor & Adaptive Learning Platform 
 
 > An AI-powered personalized tutoring system that answers student questions **strictly from uploaded course material**, preventing hallucinations.
 
@@ -7,7 +7,7 @@ Built with FastAPI + ChromaDB + Local Embeddings + Gemini Flash 3.
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue)]()
 
-## ✨ Features
+## Features
 
 - **No Hallucinations**: Answers only from your syllabus
 - **Fast Ingestion**: Parse PDFs -> Chunks -> Vector DB in seconds
@@ -16,7 +16,11 @@ Built with FastAPI + ChromaDB + Local Embeddings + Gemini Flash 3.
 - **Persistent Storage**: Knowledge survives restarts
 - **Tested**: 10+ edge cases covered in test suite
 
-## 📦 Tech Stack
+  
+## Overview
+See [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) for full architecture.
+
+## Tech Stack
 
 | Layer | Technology |
 |------|------------|
@@ -27,7 +31,7 @@ Built with FastAPI + ChromaDB + Local Embeddings + Gemini Flash 3.
 | Language | Python 3.11 |
 | Packaging | uv |
 
-## ▶️ Quick Start
+## Quick Start
 
 ```bash
 # Clone the repo
@@ -43,14 +47,14 @@ uv run uvicorn backend.main:app --reload --port 8000
 
 Open Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-## 🧪 Test Suite
+## Test Suite
 
 ```bash
 # Run all tests
 uv run python tests/test_week1_improved.py
 ```
 
-## 🛠️ API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
@@ -60,13 +64,10 @@ uv run python tests/test_week1_improved.py
 | GET | /inspect | Browse stored text chunks |
 | DELETE | /reset | Clear vector database |
 
-## 🤝 Contributing
+## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and workflow.
 
-## 📄 Overview
-See [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) for full architecture.
-
-## 📜 License
+## License
 MIT
 
 Made with ❤️ for students who deserve better tutors.
