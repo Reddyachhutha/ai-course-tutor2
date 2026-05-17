@@ -46,10 +46,10 @@ If the answer isn’t in the retrieved chunks → the AI says “Not covered.”
 - Filters out noise (empty/duplicate chunks)
 
 ### 3. Embedder (`embedder.py`)
-- Uses local `all-MiniLM-L6-v2` model
-- No API key needed — runs on your machine
-- Converts each chunk into a 384-dimensional vector
-- Enables semantic search (meaning over keywords)
+- Uses Google Gemini Cloud Embedding API (`models/gemini-embedding-001`)
+- Runs 100% on cloud embeddings for state-of-the-art semantic search
+- Converts each chunk into a 768-dimensional vector
+- Enabled with automated exponential backoff to handle rate limits seamlessly
 
 ### 4. Vector Store (`vector_store.py`)
 - Stores vectors + original text + metadata
@@ -109,11 +109,10 @@ If the answer isn’t in the retrieved chunks → the AI says “Not covered.”
 | PDF parsing success rate | 98% |
 | Developer onboarding time | <15 minutes |
 
-## ➡️ What’s Next? (Week 2)
-- Build `/chat` endpoint
-- Implement retrieval + generation
-- Add conversation memory
-- Create Streamlit frontend
-- Teacher analytics dashboard
+## ➡️ Roadmap Status
+- **Week 1 (COMPLETE)**: PDF Ingestion Pipeline (Parse -> Chunk -> Embed -> ChromaDB storage)
+- **Week 2 (COMPLETE)**: Cloud RAG Chat Pipeline with Conversation Memory & Citations
+- **Week 3 (NEXT)**: Streamlit Student Chat UI & Interactive Dialogue
+- **Week 4 (PENDING)**: Teacher Analytics Dashboard & SQLite Session Persistence
 
 This project proves that trustworthy educational AI is possible.

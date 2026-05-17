@@ -53,7 +53,7 @@ ai-course-tutor/
 │   ├── ingestion/
 │   │   ├── pdf_parser.py     # PDF text extraction
 │   │   ├── chunker.py        # Text splitting
-│   │   ├── embedder.py       # Local embeddings
+│   │   ├── embedder.py       # Cloud Gemini embeddings
 │   │   └── pipeline.py       # Orchestration
 │   └── database/
 │       └── vector_store.py   # ChromaDB interface
