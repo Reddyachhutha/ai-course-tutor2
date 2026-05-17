@@ -11,6 +11,7 @@ class HealthResponse(BaseModel):
     embedding_type: str
     vector_db: str
     total_chunks: int
+    loaded_documents: List[str]
     timestamp: str
     model_config = ConfigDict(from_attributes=True)
 
@@ -25,13 +26,36 @@ class UploadResponse(BaseModel):
     total_time_seconds: float
     step_times: Dict[str, float]
     message: str
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "status": "success",
+                "filename": "course_material.pdf",
+                "file_size_mb": 1.25,
+                "pages_parsed": 25,
+                "pages_with_text": 25,
+                "chunks_created": 47,
+                "chunks_stored": 47,
+                "total_time_seconds": 3.45,
+                "step_times": {
+                    "parsing": 0.85,
+                    "chunking": 0.05,
+                    "embedding": 2.10,
+                    "storing": 0.45
+                },
+                "message": "File processed successfully"
+            }
+        }
+    )
 
 class StatsResponse(BaseModel):
     total_chunks: int
     collection_name: str
     persist_dir: str
     status: str
+    documents: List[str]
+    document_count: int
     last_updated: str
     model_config = ConfigDict(from_attributes=True)
 
@@ -67,8 +91,16 @@ class InspectResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str = Field(..., min_length=3, max_length=1000)
-    session_id: str = Field(default="default")
-    model_config = ConfigDict(from_attributes=True)
+    session_id: str = Field(default="student_001")
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "question": "What are the main topics covered in this course?",
+                "session_id": "student_001"
+            }
+        }
+    )
 
 class ContextChunk(BaseModel):
     source: str
@@ -102,7 +134,40 @@ class ChatResponse(BaseModel):
     timing: TimingInfo
     timestamp: str
     turn_number: int
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "answer": "Based on your uploaded course material, the main topics covered include...",
+                "question": "What are the main topics covered in this course?",
+                "session_id": "student_001",
+                "sources": ["course_material.pdf"],
+                "chunks_used": 5,
+                "context_relevance": [
+                    {
+                        "source": "course_material.pdf",
+                        "relevance_score": 0.892,
+                        "rank": 1
+                    }
+                ],
+                "faithfulness_check": {
+                    "faithfulness": "faithful",
+                    "answer_length": 65,
+                    "has_disclaimer": False
+                },
+                "model_used": "gemini-3-flash-preview",
+                "generation_success": True,
+                "timing": {
+                    "retrieval_seconds": 0.45,
+                    "generation_seconds": 1.25,
+                    "memory_seconds": 0.05,
+                    "total_seconds": 1.75
+                },
+                "timestamp": "2026-05-17T16:00:00Z",
+                "turn_number": 1
+            }
+        }
+    )
 
 class HistoryMessage(BaseModel):
     turn_number: int

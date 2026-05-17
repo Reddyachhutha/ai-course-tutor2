@@ -73,7 +73,17 @@ async def startup_event():
     print("|  Vector DB: ChromaDB (768 dims)      |")
     print("+" + "="*38 + "+")
     count = vector_store.get_count()
-    print(f"Knowledge base: {count} chunks ready")
+    sources = vector_store.list_sources()
+    print(f"📚 Knowledge base: {count} chunks ready")
+    print(f"📄 Sources: {len(sources)} documents loaded")
+    
+    if sources:
+        print(f"📄 Documents loaded: {len(sources)}")
+        for source in sources:
+            print(f"   • {source}")
+    else:
+        print("📄 No documents loaded yet")
+        print("   Upload a PDF via POST /upload to get started")
 
 # --- System Endpoint ---
 
@@ -89,6 +99,7 @@ async def health():
         embedding_type="Cloud (Gemini API)",
         vector_db="ChromaDB (768 dimensions)",
         total_chunks=vector_store.get_count(),
+        loaded_documents=vector_store.list_sources(),
         timestamp=datetime.now().isoformat()
     )
 
@@ -130,11 +141,14 @@ async def upload_pdf(file: UploadFile = File(...)):
 
 @app.get("/stats", tags=["Knowledge Base"], response_model=StatsResponse)
 async def stats():
+    sources = vector_store.list_sources()
     return StatsResponse(
         total_chunks=vector_store.get_count(),
         collection_name=settings.COLLECTION_NAME,
         persist_dir=str(settings.CHROMA_PERSIST_DIR),
         status="active",
+        documents=sources,
+        document_count=len(sources),
         last_updated=datetime.now().isoformat()
     )
 
