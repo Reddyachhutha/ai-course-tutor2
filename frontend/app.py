@@ -1,28 +1,47 @@
 import streamlit as st
+import requests
 
-# Page settings
+# ---------------- PAGE SETTINGS ---------------- #
+
 st.set_page_config(
-    page_title="AI Tutor",
+    page_title="AI Tutor Platform",
     page_icon="📘",
     layout="wide"
 )
 
-# Sidebar
-st.sidebar.title("AI Tutor Platform")
+# ---------------- SIDEBAR ---------------- #
+
+st.sidebar.title("📚 AI Tutor Platform")
 
 page = st.sidebar.selectbox(
-    "Choose Option",
+    "Navigation",
     ["Home", "Chatbot", "Quiz Generator"]
 )
 
-# Home Page
+# ---------------- HOME PAGE ---------------- #
+
 if page == "Home":
 
-    st.title("🎓 AI Tutor & Adaptive Learning Platform")
+    st.title("🎓 Generative AI Tutor & Adaptive Learning Platform")
 
-    st.write(
-        "This platform helps students learn from uploaded study materials using AI."
-    )
+    st.write("""
+    Welcome to the AI Tutor Platform.
+
+    This project is built using:
+    - FastAPI
+    - Streamlit
+    - LangChain
+    - ChromaDB
+    - Gemini API
+
+    The platform allows students to:
+    - Upload study materials
+    - Ask questions from PDFs
+    - Generate quizzes
+    - Learn interactively using AI
+    """)
+
+    st.divider()
 
     col1, col2, col3 = st.columns(3)
 
@@ -30,27 +49,30 @@ if page == "Home":
         st.info("📄 Upload PDF Notes")
 
     with col2:
-        st.info("🤖 Ask AI Questions")
+        st.info("🤖 Ask Questions")
 
     with col3:
         st.info("📝 Generate Quizzes")
 
-    st.subheader("Technology Used")
+    st.divider()
 
-    st.write(
-        """
-        - FastAPI
-        - Streamlit
-        - LangChain
-        - ChromaDB
-        - Gemini API
-        """
-    )
+    st.subheader("🚀 Features")
 
-# Chatbot Page
+    st.write("""
+    ✅ Retrieval-Augmented Generation (RAG)  
+    ✅ Conversational AI Tutor  
+    ✅ Adaptive Learning Support  
+    ✅ PDF-based Question Answering  
+    ✅ Quiz Generation  
+    """)
+
+# ---------------- CHATBOT PAGE ---------------- #
+
 elif page == "Chatbot":
 
     st.title("🤖 AI Tutor Chatbot")
+
+    st.write("Upload your study PDF and ask questions related to the content.")
 
     uploaded_file = st.file_uploader(
         "Upload PDF File",
@@ -65,26 +87,83 @@ elif page == "Chatbot":
 
         if uploaded_file is not None and question != "":
 
-            with st.spinner("Generating answer..."):
+            with st.spinner("Generating answer from AI Tutor..."):
 
-                st.success("Answer Generated")
+                try:
 
-                st.write("### Your Question")
-                st.write(question)
+                    # -------- Upload PDF -------- #
 
-                st.write("### AI Response")
+                    files = {
+                        "file": (
+                            uploaded_file.name,
+                            uploaded_file.getvalue(),
+                            "application/pdf"
+                        )
+                    }
 
-                st.write(
-                    "This answer will be generated from the uploaded PDF using RAG and Gemini API."
-                )
+                    upload_response = requests.post(
+                        "http://127.0.0.1:8000/upload",
+                        files=files
+                    )
+
+                    # -------- Check Upload -------- #
+
+                    if upload_response.status_code == 200:
+
+                        # -------- Chat Request -------- #
+
+                        payload = {
+                            "question": question,
+                            "session_id": "student_001"
+                        }
+
+                        response = requests.post(
+                            "http://127.0.0.1:8000/chat",
+                            json=payload
+                        )
+
+                        # -------- Display Response -------- #
+
+                        if response.status_code == 200:
+
+                            data = response.json()
+
+                            st.success("Answer Generated Successfully")
+
+                            st.write("### 📌 Your Question")
+                            st.write(question)
+
+                            st.write("### 🤖 AI Response")
+                            st.success(data["answer"])
+
+                            # -------- Sources -------- #
+
+                            if "sources" in data:
+
+                                st.write("### 📚 Sources")
+
+                                for source in data["sources"]:
+                                    st.write(f"- {source}")
+
+                        else:
+                            st.error("Failed to get response from chatbot backend.")
+
+                    else:
+                        st.error("PDF upload failed.")
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
         else:
             st.error("Please upload a PDF and ask a question.")
 
-# Quiz Generator Page
+# ---------------- QUIZ GENERATOR PAGE ---------------- #
+
 elif page == "Quiz Generator":
 
     st.title("📝 Quiz Generator")
+
+    st.write("Generate quizzes based on study topics.")
 
     topic = st.text_input(
         "Enter Topic Name"
@@ -99,14 +178,18 @@ elif page == "Quiz Generator":
 
         if topic != "":
 
-            st.success("Quiz Generated")
+            st.success("Quiz Generated Successfully")
 
-            st.write(f"### Topic: {topic}")
-            st.write(f"Difficulty: {difficulty}")
+            st.write(f"### 📌 Topic: {topic}")
+            st.write(f"### 🎯 Difficulty: {difficulty}")
+
+            st.write("## Questions")
 
             st.write("1. Sample Question One")
             st.write("2. Sample Question Two")
             st.write("3. Sample Question Three")
+            st.write("4. Sample Question Four")
+            st.write("5. Sample Question Five")
 
         else:
             st.error("Please enter a topic.")
