@@ -11,7 +11,7 @@ Our development lifecycle follows an enterprise-standard division of labor to en
 * **Mehak Anand (Project & QA Lead):** Repository Architecture, Workspace Security Governance, CI/CD Branching Policies, and End-to-End Modular QA Pipeline Validation.
 * **Kumar Ravichandran (Backend Engineer):** Core RAG Logic Engine development, Text Processing pipelines, and ChromaDB Vector Storage integration.
 * **Lalita Kumari (Frontend Engineer):** Streamlit Web User Interface client design, State Management, and Backend API Endpoint Integration.
-
+* **Reddy (Infrastructure & DevOps Engineer):** Infrastructure setup, GitHub repository initialization, scalable workspace configuration, virtual machine environment management, database and SaaS integration support, multithreading environment setup, secure file upload/download handling, synchronization services, and service-oriented architecture support for deployment workflows.
 ---
 
 ## 🛠️ Project Architecture & Directory Structure
