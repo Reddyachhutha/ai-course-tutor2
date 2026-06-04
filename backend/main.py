@@ -15,8 +15,10 @@ from backend.models.schemas import (
     HealthResponse, UploadResponse, StatsResponse, 
     InspectResponse, ResetResponse, ErrorResponse, ChunkInfo,
     ChatRequest, ChatResponse, HistoryResponse, AllSessionsResponse, 
-    ClearHistoryResponse, HistoryMessage, ContextChunk, FaithfulnessCheck, TimingInfo
+    ClearHistoryResponse, HistoryMessage, ContextChunk, FaithfulnessCheck, TimingInfo, QuizRequest,
+QuizResponse
 )
+from backend.chat.quiz_generator import QuizGenerator
 from backend.ingestion.pipeline import IngestionPipeline
 from backend.database.vector_store import VectorStore
 from backend.chat.rag_chain import RAGChain
@@ -62,6 +64,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 pipeline = IngestionPipeline()
 vector_store = VectorStore()
 rag_chain = RAGChain()
+quiz_generator = QuizGenerator()
 
 @app.on_event("startup")
 async def startup_event():
@@ -256,3 +259,13 @@ async def get_sessions():
         total_sessions=len(sessions),
         sessions=sessions
     )
+@app.post("/quiz", tags=["RAG Chat"])
+async def generate_quiz(request: QuizRequest):
+
+    quiz_text = quiz_generator.generate_quiz(request.topic)
+
+    return {
+        "topic": request.topic,
+        "difficulty": request.difficulty,
+        "quiz": quiz_text
+    }
