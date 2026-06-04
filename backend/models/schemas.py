@@ -194,3 +194,18 @@ class ClearHistoryResponse(BaseModel):
     session_id: str
     message: str
     model_config = ConfigDict(from_attributes=True)
+class QuizRequest(BaseModel):
+    topic: str
+    difficulty: str = "Medium"
+
+
+class QuizQuestion(BaseModel):
+    question: str
+    options: List[str]
+    answer: str
+
+
+class QuizResponse(BaseModel):
+    topic: str
+    difficulty: str
+    questions: List[QuizQuestion]
