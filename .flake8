@@ -1,0 +1,11 @@
+[flake8]
+# QA Governance: Code Formatting Rules for the AI Tutor Platform
+max-line-length = 88
+exclude = 
+    .git,
+    __pycache__,
+    .env,
+    venv,
+    uv.lock
+ignore = E203, W503
+max-complexity = 10
