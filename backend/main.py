@@ -18,7 +18,8 @@ from backend.models.schemas import (
     InspectResponse, ResetResponse, ErrorResponse, ChunkInfo,
     ChatRequest, ChatResponse, HistoryResponse, AllSessionsResponse, 
     ClearHistoryResponse, HistoryMessage, ContextChunk, FaithfulnessCheck, TimingInfo, QuizRequest,
-QuizResponse
+QuizResponse, QuizEvaluationRequest,
+QuizEvaluationResponse
 )
 from backend.chat.quiz_generator import QuizGenerator
 from backend.ingestion.pipeline import IngestionPipeline
@@ -284,3 +285,27 @@ async def generate_flashcards(request: FlashcardRequest):
         "topic": request.topic,
         "flashcards": cards
     }
+@app.post("/quiz/evaluate", response_model=QuizEvaluationResponse)
+async def evaluate_quiz(request: QuizEvaluationRequest):
+
+    score = 0
+
+    for correct, user in zip(
+        request.correct_answers,
+        request.user_answers
+    ):
+        if correct.upper() == user.upper():
+            score += 1
+
+    total = len(request.correct_answers)
+
+    percentage = (
+        round((score / total) * 100, 2)
+        if total > 0 else 0
+    )
+
+    return QuizEvaluationResponse(
+        score=score,
+        total=total,
+        percentage=percentage
+    )

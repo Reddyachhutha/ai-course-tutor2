@@ -217,3 +217,12 @@ class FlashcardRequest(BaseModel):
 class FlashcardResponse(BaseModel):
     topic: str
     flashcards: str    
+
+class QuizEvaluationRequest(BaseModel):
+    correct_answers: List[str]
+    user_answers: List[str]
+
+class QuizEvaluationResponse(BaseModel):
+    score: int
+    total: int
+    percentage: float    
