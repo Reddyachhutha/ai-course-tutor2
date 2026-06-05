@@ -209,3 +209,11 @@ class QuizResponse(BaseModel):
     topic: str
     difficulty: str
     questions: List[QuizQuestion]
+
+class FlashcardRequest(BaseModel):
+    topic: str
+
+
+class FlashcardResponse(BaseModel):
+    topic: str
+    flashcards: str    

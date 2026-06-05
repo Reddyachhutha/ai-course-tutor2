@@ -8,6 +8,8 @@ import shutil
 import re
 import traceback
 import logging
+from backend.models.schemas import FlashcardRequest, FlashcardResponse
+from backend.chat.flashcard_generator import FlashcardGenerator
 from datetime import datetime
 
 from backend.config import settings
@@ -65,6 +67,7 @@ pipeline = IngestionPipeline()
 vector_store = VectorStore()
 rag_chain = RAGChain()
 quiz_generator = QuizGenerator()
+flashcard_generator = FlashcardGenerator()
 
 @app.on_event("startup")
 async def startup_event():
@@ -268,4 +271,16 @@ async def generate_quiz(request: QuizRequest):
         "topic": request.topic,
         "difficulty": request.difficulty,
         "quiz": quiz_text
+    }
+
+@app.post("/flashcards")
+async def generate_flashcards(request: FlashcardRequest):
+
+    cards = flashcard_generator.generate_flashcards(
+        request.topic
+    )
+
+    return {
+        "topic": request.topic,
+        "flashcards": cards
     }
