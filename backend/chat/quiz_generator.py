@@ -10,6 +10,7 @@ class QuizGenerator:
         self.retriever = Retriever()
 
     def generate_quiz(self, topic):
+        print("NEW QUIZ GENERATOR RUNNING")
 
         # Retrieve relevant chunks from ChromaDB
         chunks = self.retriever.retrieve(topic)
@@ -22,32 +23,31 @@ class QuizGenerator:
             return "No relevant course material found for this topic."
 
         prompt = f"""
-You are an AI Tutor.
+You are an AI tutor.
 
-Use ONLY the course material provided below.
+Use ONLY the given course material.
 
 COURSE MATERIAL:
 {context}
 
-Generate exactly 5 multiple-choice questions.
+Generate 5 multiple choice questions.
 
-Format:
+Return ONLY valid JSON in this format:
 
-Q1:
-Question
-A)
-B)
-C)
-D)
-
-Answer: A
+{{
+  "questions": [
+    {{
+      "question": "string",
+      "options": ["A", "B", "C", "D"],
+      "answer": "A"
+    }}
+  ]
+}}
 
 Rules:
-1. Use only the provided course material.
-2. Do not use outside knowledge.
-3. Do not make up information.
-4. Generate exactly 5 MCQs.
-5. Include the correct answer after each question.
+- Only use given context
+- No extra text
+- Strict JSON only
 """
 
         response = self.model.generate_content(prompt)
