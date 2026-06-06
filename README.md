@@ -48,3 +48,46 @@ The repository is organized into isolated structural modules to maintain high sc
 * Transition layout wireframes into expanded dashboard metrics for tracking student learning progress.
 * Incorporate automated automated assessment suites to evaluate context relevance metrics.
 * Deploy live cloud hosting pipelines for an interactive final product demonstration.
+
+
+## 📚 Additional Learning Features
+
+### Quiz Generation
+
+* Generates multiple-choice questions directly from uploaded course materials.
+* Uses ChromaDB retrieval and Gemini LLM to ensure context-aware questions.
+
+### Quiz Evaluation
+
+* Evaluates student answers.
+* Calculates score and percentage automatically.
+
+### Flashcard Generation
+
+* Creates question-answer flashcards from uploaded learning material.
+* Helps students revise concepts quickly.
+
+### Notes Generation
+
+* Generates concise study notes from retrieved course content.
+* Extracts key concepts and important learning points.
+
+### Summary Generation
+
+* Produces short summaries based on uploaded documents.
+* Helps students quickly understand large topics.
+
+## ✅ Current Platform Features
+
+* PDF Upload & Processing
+* Semantic Text Chunking
+* Gemini Embeddings
+* ChromaDB Vector Database
+* RAG-Based AI Tutor
+* Conversation Memory
+* Quiz Generation
+* Quiz Evaluation
+* Flashcard Generation
+* Notes Generation
+* Summary Generation
+* Swagger API Documentation
