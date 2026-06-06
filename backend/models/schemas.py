@@ -225,4 +225,7 @@ class QuizEvaluationRequest(BaseModel):
 class QuizEvaluationResponse(BaseModel):
     score: int
     total: int
-    percentage: float    
+    percentage: float
+
+class NotesRequest(BaseModel):
+    topic: str        

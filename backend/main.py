@@ -11,6 +11,7 @@ import logging
 from backend.models.schemas import FlashcardRequest, FlashcardResponse
 from backend.chat.flashcard_generator import FlashcardGenerator
 from datetime import datetime
+from backend.chat.notes_generator import NotesGenerator
 
 from backend.config import settings
 from backend.models.schemas import (
@@ -19,7 +20,7 @@ from backend.models.schemas import (
     ChatRequest, ChatResponse, HistoryResponse, AllSessionsResponse, 
     ClearHistoryResponse, HistoryMessage, ContextChunk, FaithfulnessCheck, TimingInfo, QuizRequest,
 QuizResponse, QuizEvaluationRequest,
-QuizEvaluationResponse
+QuizEvaluationResponse,   NotesRequest
 )
 from backend.chat.quiz_generator import QuizGenerator
 from backend.ingestion.pipeline import IngestionPipeline
@@ -69,6 +70,7 @@ vector_store = VectorStore()
 rag_chain = RAGChain()
 quiz_generator = QuizGenerator()
 flashcard_generator = FlashcardGenerator()
+notes_generator = NotesGenerator()
 
 @app.on_event("startup")
 async def startup_event():
@@ -309,3 +311,15 @@ async def evaluate_quiz(request: QuizEvaluationRequest):
         total=total,
         percentage=percentage
     )
+
+@app.post("/notes")
+async def generate_notes(request: NotesRequest):
+
+    notes = notes_generator.generate_notes(
+        request.topic
+    )
+
+    return {
+        "topic": request.topic,
+        "notes": notes
+    }
