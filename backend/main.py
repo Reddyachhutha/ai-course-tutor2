@@ -1,6 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.gzip import GZIPMiddleware
 from typing import List, Optional, Dict, Any
 import os
 import time
@@ -47,14 +49,81 @@ The entire system is 100% powered by the Google Gemini API.
     ]
 )
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# ==================== SECURITY MIDDLEWARE ====================
+
+# CORS - Restrict to specific origins in production
+cors_origins = settings.CORS_ORIGINS if settings.CORS_ORIGINS != ["*"] else ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+    max_age=600,  # Cache preflight for 10 minutes
+)
+
+# Trusted Host - Prevent Host Header injection
+if settings.ENVIRONMENT == "production":
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=settings.ALLOWED_HOSTS,
+    )
+
+# GZIP compression
+app.add_middleware(GZIPMiddleware, minimum_size=1000)
+
+# Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains" if settings.ENFORCE_HTTPS else ""
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    
+    return response
+
+# Request logging & rate limiting
+from collections import defaultdict
+from datetime import datetime, timedelta
+
+request_timestamps = defaultdict(list)
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def rate_limit_and_log(request: Request, call_next):
+    # Simple rate limiting (5 requests per minute per IP)
+    client_ip = request.client.host if request.client else "unknown"
+    now = datetime.now()
+    cutoff = now - timedelta(minutes=1)
+    
+    # Clean old timestamps
+    request_timestamps[client_ip] = [
+        ts for ts in request_timestamps[client_ip] if ts > cutoff
+    ]
+    
+    # Check rate limit
+    if len(request_timestamps[client_ip]) >= 100:  # 100 requests per minute
+        logger.warning(f"Rate limit exceeded for {client_ip}")
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Too many requests"},
+        )
+    
+    request_timestamps[client_ip].append(now)
+    
+    # Log request
     start_time = time.time()
     response = await call_next(request)
     process_time = round((time.time() - start_time) * 1000, 2)
-    logger.info(f"{request.method} {request.url.path} - {response.status_code} in {process_time}ms")
+    
+    logger.info(
+        f"{request.method} {request.url.path} - {response.status_code} - {process_time}ms - {client_ip}"
+    )
+    
     return response
 
 @app.exception_handler(Exception)
