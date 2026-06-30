@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y \
 # Copy project files
 COPY pyproject.toml pyproject.lock* ./
 COPY backend/ ./backend/
-COPY models/ ./models/ 2>/dev/null || true
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -e .
