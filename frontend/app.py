@@ -1,5 +1,8 @@
+import os
 import streamlit as st
 import requests
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 
 # ---------------- PAGE SETTINGS ---------------- #
 
@@ -102,8 +105,9 @@ elif page == "Chatbot":
                     }
 
                     upload_response = requests.post(
-                        "http://127.0.0.1:8000/upload",
-                        files=files
+                        f"{BACKEND_URL}/upload",
+                        files=files,
+                        timeout=120
                     )
 
                     # -------- Check Upload -------- #
@@ -118,8 +122,9 @@ elif page == "Chatbot":
                         }
 
                         response = requests.post(
-                            "http://127.0.0.1:8000/chat",
-                            json=payload
+                            f"{BACKEND_URL}/chat",
+                            json=payload,
+                            timeout=120
                         )
 
                         # -------- Display Response -------- #
