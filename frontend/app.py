@@ -183,18 +183,28 @@ elif page == "Quiz Generator":
 
         if topic != "":
 
-            st.success("Quiz Generated Successfully")
-
-            st.write(f"### 📌 Topic: {topic}")
-            st.write(f"### 🎯 Difficulty: {difficulty}")
-
-            st.write("## Questions")
-
-            st.write("1. Sample Question One")
-            st.write("2. Sample Question Two")
-            st.write("3. Sample Question Three")
-            st.write("4. Sample Question Four")
-            st.write("5. Sample Question Five")
+            with st.spinner("Generating quiz from AI Tutor..."):
+                try:
+                    payload = {
+                        "topic": topic,
+                        "difficulty": difficulty
+                    }
+                    response = requests.post(
+                        f"{BACKEND_URL}/quiz",
+                        json=payload,
+                        timeout=120
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        st.success("Quiz Generated Successfully")
+                        st.write(f"### 📌 Topic: {data['topic']}")
+                        st.write(f"### 🎯 Difficulty: {data['difficulty']}")
+                        st.write("## Quiz Content")
+                        st.write(data["quiz"])
+                    else:
+                        st.error("Failed to generate quiz from backend.")
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
         else:
             st.error("Please enter a topic.")
