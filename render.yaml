@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: ai-tutor-backend
+    env: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: ./
+    plan: starter
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: PORT
+        value: 8000
+
+  - type: web
+    name: ai-tutor-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend
+    dockerContext: ./
+    plan: starter
+    envVars:
+      - key: BACKEND_URL
+        value: https://ai-tutor-backend.onrender.com
+      - key: STREAMLIT_SERVER_HEADLESS
+        value: "true"
+      - key: STREAMLIT_SERVER_PORT
+        value: "8501"
+    depends_on:
+      - ai-tutor-backend
